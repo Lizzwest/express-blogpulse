@@ -3,6 +3,7 @@ let ejsLayouts = require('express-ejs-layouts')
 let db = require('./models')
 let moment = require('moment')
 let rowdy = require('rowdy-logger')
+const article = require('./models/article')
 let app = express()
 
 rowdy.begin(app)
@@ -25,16 +26,19 @@ app.get('/', (req, res) => {
   db.article.findAll({
     include: [db.author]
   }).then((articles) => {
-    res.render('main/index', { articles: articles })
+    res.render('main/index', { articles: articles, authors: article.author})
   }).catch((error) => {
     console.log(error)
     res.status(400).render('main/404')
   })
 })
 
+
+
 // bring in authors and articles controllers
 app.use('/authors', require('./controllers/authors'))
 app.use('/articles', require('./controllers/articles'))
+// app.use('/comments', require('./controllers/comments'))
 
 var server = app.listen(process.env.PORT || 3000, () => {
   rowdy.print()

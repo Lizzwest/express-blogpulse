@@ -1,9 +1,11 @@
 let express = require('express')
 let db = require('../models')
+const comment = require('../models/comment')
 let router = express.Router()
 
 // POST /articles - create a new post
 router.post('/', (req, res) => {
+  console.log(req.body)
   db.article.create({
     title: req.body.title,
     content: req.body.content,
@@ -32,17 +34,36 @@ router.get('/new', (req, res) => {
 router.get('/:id', (req, res) => {
   db.article.findOne({
     where: { id: req.params.id },
-    include: [db.author]
+    include: [db.author, db.comment]
   })
   .then((article) => {
     if (!article) throw Error()
     console.log(article.author)
-    res.render('articles/show', { article: article })
+    res.render('articles/show', { article: article, comment: article.comments, authors: article.authors })
   })
   .catch((error) => {
     console.log(error)
     res.status(400).render('main/404')
   })
 })
+
+
+router.post("/:id", (req, res)=>{
+  db.comment.create({
+    name: req.body.name,
+    content: req.body.content,
+    articleId: req.params.id
+    
+  })
+  .then(()=>{
+    console.log(req.params.id)
+    res.redirect('./' + req.params.id)
+  })
+  .catch(error=>{
+    console.log(error)
+    res.status(400).render('main/404')
+  })
+})
+
 
 module.exports = router
